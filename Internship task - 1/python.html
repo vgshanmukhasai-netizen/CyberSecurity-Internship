@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caesar Cipher</title>
+<style>
+  :root {
+    --parchment: #ece2cb;
+    --parchment-dark: #ddcfaf;
+    --ink: #2b2419;
+    --ink-soft: #5c5140;
+    --rust: #a1462c;
+    --brass: #8a6d3b;
+    --line: #c9b98d;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 50px 20px 70px;
+    background-color: var(--parchment);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(161,70,44,0.05), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(138,109,59,0.07), transparent 40%);
+    color: var(--ink);
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    display: flex;
+    justify-content: center;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 760px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 44px;
+  }
+
+  .eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--brass);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 40px;
+    font-weight: normal;
+    margin: 0 0 8px;
+    letter-spacing: 1px;
+  }
+
+  header p {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* --- Cipher wheel (signature element) --- */
+  .wheel-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 8px;
+  }
+
+  #wheel-inner {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: 110px 110px;
+  }
+
+  .wheel-caption {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .wheel-caption strong {
+    color: var(--rust);
+    font-size: 15px;
+  }
+
+  /* --- Form panel --- */
+  .panel {
+    background-color: #fbf6e9;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 30px;
+  }
+
+  label {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background-color: #fffdf6;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 90px;
+    margin-bottom: 22px;
+  }
+
+  textarea:focus, input:focus, button:focus {
+    outline: 2px solid var(--rust);
+    outline-offset: 1px;
+  }
+
+  .shift-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 26px;
+  }
+
+  .shift-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--rust);
+  }
+
+  .shift-value {
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    color: var(--rust);
+    width: 34px;
+    text-align: center;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  button {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+    background-color: var(--ink);
+    color: var(--parchment);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  button:hover {
+    background-color: var(--rust);
+    border-color: var(--rust);
+  }
+
+  button.secondary {
+    background-color: transparent;
+    color: var(--ink);
+  }
+
+  button.secondary:hover {
+    background-color: var(--parchment-dark);
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--line);
+    margin: 0 0 22px;
+  }
+
+  .result-box {
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background-color: var(--parchment-dark);
+    min-height: 50px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .footnote {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-top: 34px;
+    letter-spacing: 0.5px;
+  }
+
+  @media (max-width: 640px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .wheel-wrap {
+      order: -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #wheel-inner {
+      transition: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Cryptographia · Est. Rome</div>
+    <h1>Caesar Cipher</h1>
+    <p>Turn the inner ring to shift every letter</p>
+  </header>
+
+  <div class="layout">
+
+    <div class="wheel-wrap">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <!-- outer fixed ring: plain alphabet -->
+        <circle cx="110" cy="110" r="105" fill="#fbf6e9" stroke="#8a6d3b" stroke-width="1.5"/>
+        <circle cx="110" cy="110" r="86" fill="none" stroke="#c9b98d" stroke-width="1"/>
+        <g id="outer-letters" font-family="Georgia, serif" font-size="11" fill="#2b2419" text-anchor="middle"></g>
+
+        <!-- inner rotating ring: cipher alphabet -->
+        <g id="wheel-inner">
+          <circle cx="110" cy="110" r="66" fill="#f3e9d2" stroke="#a1462c" stroke-width="1.5"/>
+          <circle cx="110" cy="110" r="46" fill="none" stroke="#c9b98d" stroke-width="1"/>
+          <g id="inner-letters" font-family="'Courier New', monospace" font-size="10" fill="#a1462c" text-anchor="middle"></g>
+          <circle cx="110" cy="110" r="5" fill="#8a6d3b"/>
+          <line x1="110" y1="110" x2="110" y2="64" stroke="#8a6d3b" stroke-width="2"/>
+        </g>
+      </svg>
+      <div class="wheel-caption">SHIFT<br><strong id="wheel-shift-label">3</strong></div>
+    </div>
+
+    <div class="panel">
+      <label for="message">Message</label>
+      <textarea id="message" placeholder="Type or paste your message here"></textarea>
+
+      <label for="shift">Shift value — <span id="shift-echo">3</span></label>
+      <div class="shift-row">
+        <input type="range" id="shift" min="0" max="25" value="3">
+        <span class="shift-value" id="shift-num">3</span>
+      </div>
+
+      <div class="actions">
+        <button onclick="runCipher('encrypt')">Encrypt</button>
+        <button onclick="runCipher('decrypt')">Decrypt</button>
+        <button class="secondary" onclick="clearAll()">Clear</button>
+      </div>
+
+      <hr class="divider">
+
+      <label>Result</label>
+      <div class="result-box" id="output"></div>
+    </div>
+
+  </div>
+
+  <p class="footnote">Non-letter characters pass through unchanged · shift wraps around A–Z</p>
+
+</div>
+
+<script>
+  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  function placeLetters(groupId, radius, offsetAngle) {
+    const g = document.getElementById(groupId);
+    const cx = 110, cy = 110;
+    ALPHABET.split('').forEach((letter, i) => {
+      const angle = (i / 26) * 2 * Math.PI - Math.PI / 2 + offsetAngle;
+      const x = cx + radius * Math.cos(angle);
+      const y = cy + radius * Math.sin(angle) + 4;
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', x);
+      t.setAttribute('y', y);
+      t.textContent = letter;
+      g.appendChild(t);
+    });
+  }
+
+  placeLetters('outer-letters', 95, 0);
+  placeLetters('inner-letters', 56, 0);
+
+  function updateWheel(shift) {
+    const wheel = document.getElementById('wheel-inner');
+    const angle = (shift / 26) * 360;
+    wheel.style.transform = `rotate(${angle}deg)`;
+    document.getElementById('wheel-shift-label').textContent = shift;
+  }
+
+  function shiftChar(char, shift) {
+    if (char >= 'A' && char <= 'Z') {
+      return String.fromCharCode(((char.charCodeAt(0) - 65 + shift) % 26 + 26) % 26 + 65);
+    }
+    if (char >= 'a' && char <= 'z') {
+      return String.fromCharCode(((char.charCodeAt(0) - 97 + shift) % 26 + 26) % 26 + 97);
+    }
+    return char;
+  }
+
+  function encrypt(text, shift) {
+    return text.split('').map(c => shiftChar(c, shift)).join('');
+  }
+
+  function decrypt(text, shift) {
+    return text.split('').map(c => shiftChar(c, -shift)).join('');
+  }
+
+  function runCipher(mode) {
+    const message = document.getElementById('message').value;
+    const shift = parseInt(document.getElementById('shift').value, 10) || 0;
+    const output = document.getElementById('output');
+
+    if (!message) {
+      output.textContent = 'Enter a message first.';
+      return;
+    }
+    output.textContent = mode === 'encrypt' ? encrypt(message, shift) : decrypt(message, shift);
+  }
+
+  function clearAll() {
+    document.getElementById('message').value = '';
+    document.getElementById('output').textContent = '';
+  }
+
+  const shiftInput = document.getElementById('shift');
+  shiftInput.addEventListener('input', (e) => {
+    const val = e.target.value;
+    document.getElementById('shift-num').textContent = val;
+    document.getElementById('shift-echo').textContent = val;
+    updateWheel(parseInt(val, 10));
+  });
+
+  updateWheel(3);
+</script>
+
+</body>
+</html>
