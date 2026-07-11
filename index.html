@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cipher Lab — Encoding &amp; Security Toolkit</title>
+<style>
+  :root {
+    --paper: #f4ede0;
+    --paper-dark: #e7dcc6;
+    --ink: #241f1b;
+    --ink-soft: #5b5346;
+    --line: #d9cdb5;
+
+    --rust: #a1462c;
+    --brass: #8a6d3b;
+    --teal: #2f6f6b;
+    --amber: #c98a3f;
+    --steel: #3b6ea5;
+    --gold: #cf9a2e;
+    --green: #4c7a52;
+    --rose: #b5395a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 44px 20px 70px;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 26px 26px;
+    background-position: -1px -1px;
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    display: flex;
+    justify-content: center;
+  }
+
+  .page { width: 100%; max-width: 960px; }
+
+  /* --- Top masthead --- */
+  header.masthead {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--brass);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 42px;
+    font-weight: normal;
+    margin: 0 0 8px;
+    letter-spacing: 0.5px;
+  }
+
+  header.masthead p {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* --- Tool navigation --- */
+  nav.tool-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 30px 0 36px;
+  }
+
+  .nav-btn {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    padding: 11px 20px;
+    border: 1px solid var(--ink);
+    border-radius: 30px;
+    background-color: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .nav-btn:hover {
+    background-color: var(--paper-dark);
+  }
+
+  .nav-btn.active {
+    background-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* --- Sections --- */
+  .tool-section { display: none; }
+  .tool-section.active { display: block; }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 26px;
+  }
+
+  .section-eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .section-header h2 {
+    font-size: 26px;
+    font-weight: normal;
+    margin: 0 0 6px;
+  }
+
+  .section-header p {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  label {
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .panel {
+    background-color: #fbf7ee;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 26px 28px;
+  }
+
+  textarea, input[type="password"], input[type="text"], select {
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background-color: #fffdf7;
+    color: var(--ink);
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  textarea:focus, input:focus, select:focus, button:focus {
+    outline: 2px solid var(--steel);
+    outline-offset: 1px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed var(--line);
+    margin: 22px 0;
+  }
+
+  button {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    padding: 10px 18px;
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+    background-color: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  button.secondary {
+    background-color: transparent;
+    color: var(--ink);
+  }
+
+  button.secondary:hover { background-color: var(--paper-dark); }
+
+  .code-panel {
+    display: none;
+    background-color: #fbf7ee;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 24px;
+    margin-top: 24px;
+  }
+
+  .code-panel.open { display: block; }
+
+  .code-panel pre {
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink);
+    background-color: #fffdf7;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 0;
+    white-space: pre;
+  }
+
+  .footnote {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-top: 34px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ============ CAESAR ============ */
+  .caesar-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .wheel-wrap { display: flex; flex-direction: column; align-items: center; padding-top: 8px; }
+
+  #cs-wheel-inner {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: 110px 110px;
+  }
+
+  .wheel-caption {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .wheel-caption strong { color: var(--rust); font-size: 15px; }
+
+  .shift-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .shift-row input[type="range"] { flex: 1; accent-color: var(--rust); }
+  .shift-value { font-family: 'Courier New', monospace; font-size: 18px; color: var(--rust); width: 34px; text-align: center; }
+
+  .actions { display: flex; gap: 10px; margin-bottom: 20px; }
+  .actions button { flex: 1; }
+
+  #cs-encrypt:hover, #cs-decrypt:hover { background-color: var(--rust); border-color: var(--rust); }
+
+  .result-box {
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background-color: var(--paper-dark);
+    min-height: 50px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ============ PIXEL ============ */
+  .pixel-layout { display: grid; grid-template-columns: 280px 1fr; gap: 30px; align-items: start; }
+
+  .upload-box {
+    border: 1.5px dashed var(--line);
+    border-radius: 4px;
+    padding: 18px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    margin-bottom: 18px;
+    background-color: #fffdf7;
+    transition: border-color 0.15s ease;
+  }
+
+  .upload-box:hover { border-color: var(--teal); color: var(--teal); }
+  input[type="file"] { display: none; }
+
+  .pixel-layout select, .pixel-layout input[type="number"] { margin-bottom: 16px; }
+
+  .key-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .key-row input[type="range"] { flex: 1; accent-color: var(--teal); }
+  .key-value { font-family: 'Courier New', monospace; font-size: 15px; color: var(--teal); width: 30px; text-align: center; }
+  .key-hint { font-family: Arial, sans-serif; font-size: 11px; color: var(--ink-soft); margin-bottom: 18px; }
+
+  .pixel-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+  .pixel-actions button { flex: 1; }
+  #px-encrypt:hover, #px-decrypt:hover { background-color: var(--teal); border-color: var(--teal); }
+
+  #px-download {
+    width: 100%;
+    background-color: var(--amber);
+    border-color: var(--amber);
+    color: #241f1b;
+    display: none;
+    margin-bottom: 18px;
+  }
+  #px-download:hover { background-color: #b57a34; }
+
+  .demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 10px; margin-bottom: 18px; }
+  .demo-cell { aspect-ratio: 1; border-radius: 2px; transition: background-color 0.3s ease; }
+
+  .preview-panel { background-color: #fbf7ee; border: 1px solid var(--line); border-radius: 4px; padding: 24px; min-height: 380px; }
+  .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .preview-slot { text-align: center; }
+  .preview-slot label { text-align: center; }
+
+  .canvas-frame {
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background-color: #fffdf7;
+    background-image:
+      linear-gradient(45deg, var(--paper-dark) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--paper-dark) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--paper-dark) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--paper-dark) 75%);
+    background-size: 14px 14px;
+    background-position: 0 0, 0 7px, 7px -7px, -7px 0px;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  canvas { max-width: 100%; max-height: 240px; display: block; }
+  .empty-msg { font-family: 'Courier New', monospace; font-size: 12px; color: var(--ink-soft); }
+
+  /* ============ PASSWORD ============ */
+  .password-layout { display: grid; grid-template-columns: 1fr 300px; gap: 30px; align-items: start; }
+
+  .password-row { position: relative; margin-bottom: 22px; }
+  .password-row input { padding-right: 70px; }
+
+  .toggle-btn {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background-color: var(--paper-dark);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .toggle-btn:hover { background-color: var(--line); }
+
+  .meter-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .meter-label-row label { margin-bottom: 0; }
+  #pw-strength-text { font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; }
+
+  .plates-track { display: flex; gap: 6px; margin-bottom: 24px; }
+  .plate { flex: 1; height: 34px; border-radius: 3px; background-color: var(--paper-dark); border: 1px solid var(--line); transition: background-color 0.3s ease, border-color 0.3s ease; }
+
+  .checklist { list-style: none; padding: 0; margin: 0 0 8px; font-family: Arial, sans-serif; font-size: 14px; }
+  .checklist li { display: flex; align-items: center; gap: 10px; padding: 7px 0; color: var(--ink-soft); border-bottom: 1px dashed var(--line); }
+  .checklist li:last-child { border-bottom: none; }
+
+  .mark { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; color: transparent; background-color: #fffdf7; flex-shrink: 0; }
+  .mark.met { background-color: var(--green); border-color: var(--green); color: #fbf7ee; }
+  li.met { color: var(--ink); }
+
+  .barbell-box { background-color: #fbf7ee; border: 1px solid var(--line); border-radius: 4px; padding: 24px; text-align: center; }
+  .barbell-caption { font-family: 'Courier New', monospace; font-size: 11px; color: var(--ink-soft); margin-top: 12px; letter-spacing: 1px; }
+
+  .pw-actions { margin-top: 18px; }
+  .pw-actions button { width: 100%; }
+
+  /* ============ KEYSTROKE ============ */
+  .keystroke-layout { display: grid; grid-template-columns: 1fr 320px; gap: 30px; align-items: start; }
+
+  .notice {
+    background-color: #fbf1e4;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--teal);
+    border-radius: 3px;
+    padding: 12px 16px;
+    font-family: Arial, sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat { background-color: var(--paper-dark); border: 1px solid var(--line); border-radius: 3px; padding: 12px; text-align: center; }
+  .stat-value { font-family: 'Courier New', monospace; font-size: 20px; color: var(--teal); }
+  .stat-label { font-family: Arial, sans-serif; font-size: 10px; letter-spacing: 0.5px; color: var(--ink-soft); text-transform: uppercase; margin-top: 4px; }
+
+  .log-panel { background-color: #fbf7ee; border: 1px solid var(--line); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; height: 400px; }
+  .log-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .log-header label { margin-bottom: 0; }
+  #kl-log-count { font-family: 'Courier New', monospace; font-size: 11px; color: var(--ink-soft); }
+
+  .log-list { flex: 1; overflow-y: auto; background-color: #fffdf7; border: 1px solid var(--line); border-radius: 3px; padding: 10px 12px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.7; }
+  .log-entry { color: var(--ink-soft); white-space: nowrap; }
+  .log-entry .key { color: var(--rose); font-weight: bold; }
+  .log-entry .time { color: #a89d86; }
+
+  @media (max-width: 760px) {
+    .caesar-layout, .pixel-layout, .password-layout, .keystroke-layout { grid-template-columns: 1fr; }
+    .wheel-wrap { order: -1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #cs-wheel-inner { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">Encoding · Security · Awareness</div>
+    <h1>Cipher Lab</h1>
+    <p>Four small tools for encrypting, checking, and understanding — with the Python behind each one</p>
+  </header>
+
+  <nav class="tool-nav">
+    <button class="nav-btn active" data-target="section-caesar">Caesar Cipher</button>
+    <button class="nav-btn" data-target="section-pixel">Pixel Cipher</button>
+    <button class="nav-btn" data-target="section-password">Password Strength</button>
+    <button class="nav-btn" data-target="section-keystroke">Keystroke Log</button>
+  </nav>
+
+  <!-- ============ CAESAR CIPHER ============ -->
+  <section class="tool-section active" id="section-caesar">
+    <div class="section-header">
+      <div class="section-eyebrow" style="color: var(--brass);">Cryptographia · Est. Rome</div>
+      <h2>Caesar Cipher</h2>
+      <p>Turn the inner ring to shift every letter</p>
+    </div>
+
+    <div class="caesar-layout">
+      <div class="wheel-wrap">
+        <svg width="220" height="220" viewBox="0 0 220 220">
+          <circle cx="110" cy="110" r="105" fill="#fbf6e9" stroke="#8a6d3b" stroke-width="1.5"/>
+          <circle cx="110" cy="110" r="86" fill="none" stroke="#c9b98d" stroke-width="1"/>
+          <g id="cs-outer-letters" font-family="Georgia, serif" font-size="11" fill="#2b2419" text-anchor="middle"></g>
+
+          <g id="cs-wheel-inner">
+            <circle cx="110" cy="110" r="66" fill="#f3e9d2" stroke="#a1462c" stroke-width="1.5"/>
+            <circle cx="110" cy="110" r="46" fill="none" stroke="#c9b98d" stroke-width="1"/>
+            <g id="cs-inner-letters" font-family="'Courier New', monospace" font-size="10" fill="#a1462c" text-anchor="middle"></g>
+            <circle cx="110" cy="110" r="5" fill="#8a6d3b"/>
+            <line x1="110" y1="110" x2="110" y2="64" stroke="#8a6d3b" stroke-width="2"/>
+          </g>
+        </svg>
+        <div class="wheel-caption">SHIFT<br><strong id="cs-wheel-shift-label">3</strong></div>
+      </div>
+
+      <div class="panel">
+        <label for="cs-message">Message</label>
+        <textarea id="cs-message" placeholder="Type or paste your message here" style="margin-bottom: 22px;"></textarea>
+
+        <label for="cs-shift">Shift value — <span id="cs-shift-echo">3</span></label>
+        <div class="shift-row">
+          <input type="range" id="cs-shift" min="0" max="25" value="3">
+          <span class="shift-value" id="cs-shift-num">3</span>
+        </div>
+
+        <div class="actions">
+          <button id="cs-encrypt">Encrypt</button>
+          <button id="cs-decrypt">Decrypt</button>
+          <button class="secondary" id="cs-clear">Clear</button>
+        </div>
+
+        <hr class="divider">
+
+        <label>Result</label>
+        <div class="result-box" id="cs-output"></div>
+
+        <button class="secondary" style="width:100%; margin-top: 18px;" id="cs-code-toggle">View Python code</button>
+      </div>
+    </div>
+
+    <div class="code-panel" id="cs-code-panel">
+      <label>Python equivalent</label>
+      <pre id="cs-python-code"></pre>
+    </div>
+
+    <p class="footnote">Non-letter characters pass through unchanged · shift wraps around A–Z</p>
+  </section>
+
+  <!-- ============ PIXEL CIPHER ============ -->
+  <section class="tool-section" id="section-pixel">
+    <div class="section-header">
+      <div class="section-eyebrow" style="color: var(--teal);">Pixel &amp; Key</div>
+      <h2>Pixel Cipher</h2>
+      <p>Scramble an image, one pixel at a time</p>
+    </div>
+
+    <div class="pixel-layout">
+      <div class="panel">
+        <label for="px-file-input">Image</label>
+        <div class="upload-box" id="px-upload-box">Click to choose an image<br>or drop it here</div>
+        <input type="file" id="px-file-input" accept="image/*">
+
+        <label for="px-operation">Operation</label>
+        <select id="px-operation">
+          <option value="xor">XOR each pixel with key</option>
+          <option value="add">Add key to each pixel (mod 256)</option>
+          <option value="swap">Swap red &amp; blue channels</option>
+        </select>
+
+        <label for="px-key" id="px-key-label">Key value — <span id="px-key-echo">77</span></label>
+        <div class="key-row">
+          <input type="range" id="px-key" min="0" max="255" value="77">
+          <span class="key-value" id="px-key-num">77</span>
+        </div>
+        <p class="key-hint" id="px-key-hint">Same key reverses the effect for XOR. Channel swap needs no key.</p>
+
+        <div class="pixel-actions">
+          <button id="px-encrypt">Encrypt</button>
+          <button id="px-decrypt">Decrypt</button>
+        </div>
+        <button class="secondary" id="px-clear" style="width:100%; margin-bottom: 14px;">Clear</button>
+        <button id="px-download">Download result</button>
+
+        <label>How the key shifts a pixel</label>
+        <div class="demo-grid" id="px-demo-grid"></div>
+
+        <button class="secondary" style="width:100%;" id="px-code-toggle">View Python code</button>
+      </div>
+
+      <div class="preview-panel">
+        <div class="preview-grid">
+          <div class="preview-slot">
+            <label>Original</label>
+            <div class="canvas-frame" id="px-original-frame"><span class="empty-msg">No image loaded</span></div>
+          </div>
+          <div class="preview-slot">
+            <label>Result</label>
+            <div class="canvas-frame" id="px-result-frame"><span class="empty-msg">Nothing processed yet</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-panel" id="px-code-panel">
+      <label>Python equivalent (Pillow)</label>
+      <pre id="px-python-code"></pre>
+    </div>
+
+    <p class="footnote">Processing happens entirely in your browser — nothing is uploaded</p>
+  </section>
+
+  <!-- ============ PASSWORD STRENGTH ============ -->
+  <section class="tool-section" id="section-password">
+    <div class="section-header">
+      <div class="section-eyebrow" style="color: var(--steel);">Security &amp; Strength</div>
+      <h2>Password Strength Check</h2>
+      <p>Type a password to see how well it holds up</p>
+    </div>
+
+    <div class="password-layout">
+      <div class="panel">
+        <label for="pw-password">Password</label>
+        <div class="password-row">
+          <input type="password" id="pw-password" placeholder="Type a password to test">
+          <button class="toggle-btn" id="pw-toggle-visibility">Show</button>
+        </div>
+
+        <div class="meter-label-row">
+          <label>Strength</label>
+          <span id="pw-strength-text">—</span>
+        </div>
+        <div class="plates-track" id="pw-plates-track"></div>
+
+        <label>Criteria</label>
+        <ul class="checklist" id="pw-checklist">
+          <li id="pw-c-length"><span class="mark">✓</span> At least 8 characters</li>
+          <li id="pw-c-upper"><span class="mark">✓</span> Contains an uppercase letter</li>
+          <li id="pw-c-lower"><span class="mark">✓</span> Contains a lowercase letter</li>
+          <li id="pw-c-number"><span class="mark">✓</span> Contains a number</li>
+          <li id="pw-c-special"><span class="mark">✓</span> Contains a special character</li>
+        </ul>
+
+        <div class="actions" style="margin-top: 18px;">
+          <button class="secondary" id="pw-clear" style="flex:1;">Clear</button>
+        </div>
+
+        <button class="secondary" style="width:100%; margin-top: 10px;" id="pw-code-toggle">View Python code</button>
+      </div>
+
+      <div class="barbell-box">
+        <svg width="220" height="140" viewBox="0 0 220 140">
+          <rect x="30" y="64" width="160" height="12" rx="3" fill="#8a8171"/>
+          <g id="pw-plates-left"></g>
+          <g id="pw-plates-right"></g>
+          <g transform="translate(95, 40)">
+            <rect x="6" y="24" width="30" height="24" rx="4" fill="#3b6ea5"/>
+            <path d="M12 24 v-8 a9 9 0 0 1 18 0 v8" fill="none" stroke="#cf9a2e" stroke-width="5"/>
+            <circle cx="21" cy="34" r="3.2" fill="#241f1b"/>
+          </g>
+        </svg>
+        <div class="barbell-caption" id="pw-barbell-caption">LOAD THE BAR</div>
+      </div>
+    </div>
+
+    <div class="code-panel" id="pw-code-panel">
+      <label>Python equivalent</label>
+      <pre id="pw-python-code"></pre>
+    </div>
+
+    <p class="footnote">Everything runs in your browser — the password is never sent anywhere</p>
+  </section>
+
+  <!-- ============ KEYSTROKE LOG ============ -->
+  <section class="tool-section" id="section-keystroke">
+    <div class="section-header">
+      <div class="section-eyebrow" style="color: var(--teal);">Input &amp; Awareness</div>
+      <h2>Keystroke Log</h2>
+      <p>See exactly what a keystroke logger records — while you type into this box only</p>
+    </div>
+
+    <div class="notice">
+      This only logs typing inside the text box below, on this page, in your browser.
+      Nothing is sent anywhere or recorded outside this tab.
+    </div>
+
+    <div class="keystroke-layout">
+      <div class="panel">
+        <label for="kl-typing-area">Type here</label>
+        <textarea id="kl-typing-area" placeholder="Start typing to see each keystroke logged on the right..." style="margin-bottom: 20px;"></textarea>
+
+        <div class="stats-row">
+          <div class="stat"><div class="stat-value" id="kl-stat-keys">0</div><div class="stat-label">Keys pressed</div></div>
+          <div class="stat"><div class="stat-value" id="kl-stat-chars">0</div><div class="stat-label">Characters</div></div>
+          <div class="stat"><div class="stat-value" id="kl-stat-wpm">0</div><div class="stat-label">Words/min</div></div>
+        </div>
+
+        <div class="actions">
+          <button class="secondary" id="kl-clear" style="flex:1;">Clear</button>
+        </div>
+
+        <button class="secondary" style="width:100%; margin-top: 14px;" id="kl-code-toggle">View Python code</button>
+      </div>
+
+      <div class="log-panel">
+        <div class="log-header">
+          <label>Live log</label>
+          <span id="kl-log-count">0 entries</span>
+        </div>
+        <div class="log-list" id="kl-log-list"></div>
+      </div>
+    </div>
+
+    <div class="code-panel" id="kl-code-panel">
+      <label>Python equivalent (safe, single-program input only)</label>
+      <pre id="kl-python-code"></pre>
+    </div>
+
+    <p class="footnote">Everything happens client-side — refreshing the page clears the log</p>
+  </section>
+
+</div>
+
+<script>
+  /* ============ TAB NAVIGATION ============ */
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+    });
+  });
+
+  /* ============ CAESAR CIPHER ============ */
+  (function () {
+    const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    function placeLetters(groupId, radius) {
+      const g = document.getElementById(groupId);
+      const cx = 110, cy = 110;
+      ALPHABET.split('').forEach((letter, i) => {
+        const angle = (i / 26) * 2 * Math.PI - Math.PI / 2;
+        const x = cx + radius * Math.cos(angle);
+        const y = cy + radius * Math.sin(angle) + 4;
+        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t.setAttribute('x', x);
+        t.setAttribute('y', y);
+        t.textContent = letter;
+        g.appendChild(t);
+      });
+    }
+
+    placeLetters('cs-outer-letters', 95);
+    placeLetters('cs-inner-letters', 56);
+
+    function updateWheel(shift) {
+      const wheel = document.getElementById('cs-wheel-inner');
+      wheel.style.transform = `rotate(${(shift / 26) * 360}deg)`;
+      document.getElementById('cs-wheel-shift-label').textContent = shift;
+    }
+
+    function shiftChar(char, shift) {
+      if (char >= 'A' && char <= 'Z') return String.fromCharCode(((char.charCodeAt(0) - 65 + shift) % 26 + 26) % 26 + 65);
+      if (char >= 'a' && char <= 'z') return String.fromCharCode(((char.charCodeAt(0) - 97 + shift) % 26 + 26) % 26 + 97);
+      return char;
+    }
+
+    function encrypt(text, shift) { return text.split('').map(c => shiftChar(c, shift)).join(''); }
+    function decrypt(text, shift) { return text.split('').map(c => shiftChar(c, -shift)).join(''); }
+
+    function run(mode) {
+      const message = document.getElementById('cs-message').value;
+      const shift = parseInt(document.getElementById('cs-shift').value, 10) || 0;
+      const output = document.getElementById('cs-output');
+      if (!message) { output.textContent = 'Enter a message first.'; return; }
+      output.textContent = mode === 'encrypt' ? encrypt(message, shift) : decrypt(message, shift);
+    }
+
+    document.getElementById('cs-encrypt').addEventListener('click', () => run('encrypt'));
+    document.getElementById('cs-decrypt').addEventListener('click', () => run('decrypt'));
+    document.getElementById('cs-clear').addEventListener('click', () => {
+      document.getElementById('cs-message').value = '';
+      document.getElementById('cs-output').textContent = '';
+    });
+
+    const shiftInput = document.getElementById('cs-shift');
+    shiftInput.addEventListener('input', (e) => {
+      document.getElementById('cs-shift-num').textContent = e.target.value;
+      document.getElementById('cs-shift-echo').textContent = e.target.value;
+      updateWheel(parseInt(e.target.value, 10));
+    });
+    updateWheel(3);
+
+    document.getElementById('cs-code-toggle').addEventListener('click', () => {
+      document.getElementById('cs-code-panel').classList.toggle('open');
+    });
+
+    document.getElementById('cs-python-code').textContent = `# Caesar Cipher Program
+
+def encrypt(text, shift):
+    result = ""
+    for char in text:
+        if char.isalpha():
+            if char.isupper():
+                result += chr((ord(char) - ord('A') + shift) % 26 + ord('A'))
+            else:
+                result += chr((ord(char) - ord('a') + shift) % 26 + ord('a'))
+        else:
+            result += char
+    return result
+
+def decrypt(text, shift):
+    result = ""
+    for char in text:
+        if char.isalpha():
+            if char.isupper():
+                result += chr((ord(char) - ord('A') - shift) % 26 + ord('A'))
+            else:
+                result += chr((ord(char) - ord('a') - shift) % 26 + ord('a'))
+        else:
+            result += char
+    return result
+
+# User Input
+message = input("Enter the message: ")
+shift = int(input("Enter the shift value: "))
+encrypted_text = encrypt(message, shift)
+decrypted_text = decrypt(encrypted_text, shift)
+print("\\nEncrypted Text:", encrypted_text)
+print("Decrypted Text:", decrypted_text)
+`;
+  })();
+
+  /* ============ PIXEL CIPHER ============ */
+  (function () {
+    const fileInput = document.getElementById('px-file-input');
+    const uploadBox = document.getElementById('px-upload-box');
+    const originalFrame = document.getElementById('px-original-frame');
+    const resultFrame = document.getElementById('px-result-frame');
+    const keyInput = document.getElementById('px-key');
+    const keyNum = document.getElementById('px-key-num');
+    const keyEcho = document.getElementById('px-key-echo');
+    const opSelect = document.getElementById('px-operation');
+    const keyHint = document.getElementById('px-key-hint');
+    const downloadBtn = document.getElementById('px-download');
+
+    let originalCanvas = null;
+    let resultCanvas = null;
+
+    uploadBox.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => { const f = e.target.files[0]; if (f) loadImage(f); });
+    uploadBox.addEventListener('dragover', (e) => { e.preventDefault(); uploadBox.style.borderColor = '#2f6f6b'; });
+    uploadBox.addEventListener('dragleave', () => { uploadBox.style.borderColor = ''; });
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.style.borderColor = '';
+      const f = e.dataTransfer.files[0];
+      if (f) loadImage(f);
+    });
+
+    function loadImage(file) {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        originalCanvas = canvas;
+        originalFrame.innerHTML = '';
+        originalFrame.appendChild(canvas);
+        resultFrame.innerHTML = '<span class="empty-msg">Nothing processed yet</span>';
+        downloadBtn.style.display = 'none';
+        resultCanvas = null;
+      };
+      img.src = URL.createObjectURL(file);
+    }
+
+    keyInput.addEventListener('input', (e) => {
+      keyNum.textContent = e.target.value;
+      keyEcho.textContent = e.target.value;
+      drawDemo();
+    });
+
+    opSelect.addEventListener('change', () => {
+      const isSwap = opSelect.value === 'swap';
+      keyInput.disabled = isSwap;
+      keyHint.textContent = isSwap
+        ? 'Channel swap needs no key — encrypt and decrypt use the same action.'
+        : (opSelect.value === 'xor' ? 'Same key reverses the effect for XOR.' : 'Decrypt subtracts the key instead of adding it.');
+      drawDemo();
+    });
+
+    function transformChannelValue(v, key, op, mode) {
+      if (op === 'xor') return v ^ key;
+      if (op === 'add') return mode === 'encrypt' ? (v + key) % 256 : (v - key + 256) % 256;
+      return v;
+    }
+
+    function processImage(mode) {
+      if (!originalCanvas) { alert('Choose an image first.'); return; }
+      const key = parseInt(keyInput.value, 10);
+      const op = opSelect.value;
+      const w = originalCanvas.width, h = originalCanvas.height;
+      const srcData = originalCanvas.getContext('2d').getImageData(0, 0, w, h);
+      const out = document.createElement('canvas');
+      out.width = w; out.height = h;
+      const outCtx = out.getContext('2d');
+      const outData = outCtx.createImageData(w, h);
+      const data = srcData.data, dst = outData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        if (op === 'swap') {
+          dst[i] = data[i + 2]; dst[i + 1] = data[i + 1]; dst[i + 2] = data[i];
+        } else {
+          dst[i] = transformChannelValue(data[i], key, op, mode);
+          dst[i + 1] = transformChannelValue(data[i + 1], key, op, mode);
+          dst[i + 2] = transformChannelValue(data[i + 2], key, op, mode);
+        }
+        dst[i + 3] = data[i + 3];
+      }
+
+      outCtx.putImageData(outData, 0, 0);
+      resultCanvas = out;
+      resultFrame.innerHTML = '';
+      resultFrame.appendChild(out);
+      downloadBtn.style.display = 'block';
+    }
+
+    document.getElementById('px-encrypt').addEventListener('click', () => processImage('encrypt'));
+    document.getElementById('px-decrypt').addEventListener('click', () => processImage('decrypt'));
+    document.getElementById('px-download').addEventListener('click', () => {
+      if (!resultCanvas) return;
+      const link = document.createElement('a');
+      link.download = 'pixel-cipher-result.png';
+      link.href = resultCanvas.toDataURL('image/png');
+      link.click();
+    });
+    document.getElementById('px-clear').addEventListener('click', () => {
+      originalCanvas = null; resultCanvas = null;
+      originalFrame.innerHTML = '<span class="empty-msg">No image loaded</span>';
+      resultFrame.innerHTML = '<span class="empty-msg">Nothing processed yet</span>';
+      downloadBtn.style.display = 'none';
+      fileInput.value = '';
+    });
+
+    const sampleValues = [40, 90, 140, 190, 210, 60, 170, 120, 30, 200, 100, 150, 70, 220, 10, 160];
+    function drawDemo() {
+      const grid = document.getElementById('px-demo-grid');
+      grid.innerHTML = '';
+      const key = parseInt(keyInput.value, 10);
+      const op = opSelect.value;
+      sampleValues.forEach((v) => {
+        const newV = op === 'swap' ? v : transformChannelValue(v, key, op, 'encrypt');
+        const cell = document.createElement('div');
+        cell.className = 'demo-cell';
+        cell.style.backgroundColor = `rgb(${newV}, ${Math.round(newV * 0.6)}, ${Math.round(255 - newV)})`;
+        grid.appendChild(cell);
+      });
+    }
+    drawDemo();
+
+    document.getElementById('px-code-toggle').addEventListener('click', () => {
+      document.getElementById('px-code-panel').classList.toggle('open');
+    });
+
+    document.getElementById('px-python-code').textContent = `# Pixel Cipher - Simple Image Encryption Tool
+# Requires Pillow: pip install Pillow
+
+from PIL import Image
+import argparse
+
+
+def xor_pixels(pixels, key):
+    return [
+        (r ^ key, g ^ key, b ^ key) + rest
+        for (r, g, b, *rest) in pixels
+    ]
+
+
+def add_pixels(pixels, key, mode):
+    shift = key if mode == "encrypt" else -key
+    return [
+        ((r + shift) % 256, (g + shift) % 256, (b + shift) % 256) + rest
+        for (r, g, b, *rest) in pixels
+    ]
+
+
+def swap_channels(pixels):
+    return [
+        (b, g, r) + rest
+        for (r, g, b, *rest) in pixels
+    ]
+
+
+def process_image(input_path, output_path, operation, key, mode):
+    img = Image.open(input_path)
+    img = img.convert("RGBA") if img.mode in ("RGBA", "LA") else img.convert("RGB")
+    pixels = list(img.getdata())
+
+    if operation == "xor":
+        new_pixels = xor_pixels(pixels, key)
+    elif operation == "add":
+        new_pixels = add_pixels(pixels, key, mode)
+    elif operation == "swap":
+        new_pixels = swap_channels(pixels)
+    else:
+        raise ValueError(f"Unknown operation: {operation}")
+
+    out_img = Image.new(img.mode, img.size)
+    out_img.putdata(new_pixels)
+    out_img.save(output_path)
+    print(f"Saved {mode}ed image to {output_path}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Encrypt or decrypt an image using pixel manipulation.")
+    parser.add_argument("input", help="Path to the input image")
+    parser.add_argument("output", help="Path to save the output image")
+    parser.add_argument("--operation", choices=["xor", "add", "swap"], default="xor")
+    parser.add_argument("--key", type=int, default=77)
+    parser.add_argument("--mode", choices=["encrypt", "decrypt"], default="encrypt")
+    args = parser.parse_args()
+
+    process_image(args.input, args.output, args.operation, args.key, args.mode)
+
+
+if __name__ == "__main__":
+    main()
+`;
+  })();
+
+  /* ============ PASSWORD STRENGTH ============ */
+  (function () {
+    const passwordInput = document.getElementById('pw-password');
+    const toggleBtn = document.getElementById('pw-toggle-visibility');
+    const strengthText = document.getElementById('pw-strength-text');
+    const platesTrack = document.getElementById('pw-plates-track');
+    const platesLeft = document.getElementById('pw-plates-left');
+    const platesRight = document.getElementById('pw-plates-right');
+    const barbellCaption = document.getElementById('pw-barbell-caption');
+
+    const criteria = [
+      { id: 'pw-c-length', test: p => p.length >= 8 },
+      { id: 'pw-c-upper', test: p => /[A-Z]/.test(p) },
+      { id: 'pw-c-lower', test: p => /[a-z]/.test(p) },
+      { id: 'pw-c-number', test: p => /[0-9]/.test(p) },
+      { id: 'pw-c-special', test: p => /[^A-Za-z0-9]/.test(p) },
+    ];
+
+    const levels = [
+      { label: 'Very weak', color: '#b1483a' },
+      { label: 'Weak', color: '#c07a3a' },
+      { label: 'Fair', color: '#cf9a2e' },
+      { label: 'Good', color: '#7a8f3e' },
+      { label: 'Strong', color: '#4c7a52' },
+      { label: 'Very strong', color: '#2f6f3f' },
+    ];
+
+    for (let i = 0; i < 5; i++) {
+      const p = document.createElement('div');
+      p.className = 'plate';
+      platesTrack.appendChild(p);
+    }
+
+    function plateRect(x, w, h, y, color) {
+      return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${color}"/>`;
+    }
+
+    function updateBarbell(score) {
+      const colors = ['#b1483a', '#c07a3a', '#cf9a2e', '#7a8f3e', '#4c7a52'];
+      let leftSvg = '', rightSvg = '';
+      const baseXLeft = 26, baseXRight = 190;
+      const widths = [10, 9, 8, 7, 6], heights = [56, 50, 44, 38, 32];
+
+      for (let i = 0; i < score; i++) {
+        const w = widths[i], h = heights[i], y = 70 - h / 2;
+        leftSvg += plateRect(baseXLeft - (i * (w + 2)) - w, w, h, y, colors[i]);
+        rightSvg += plateRect(baseXRight + (i * (w + 2)), w, h, y, colors[i]);
+      }
+      platesLeft.innerHTML = leftSvg;
+      platesRight.innerHTML = rightSvg;
+    }
+
+    function evaluate() {
+      const value = passwordInput.value;
+      let metCount = 0;
+
+      criteria.forEach(c => {
+        const passed = c.test(value);
+        const el = document.getElementById(c.id);
+        const mark = el.querySelector('.mark');
+        el.classList.toggle('met', passed);
+        mark.classList.toggle('met', passed);
+        if (passed) metCount++;
+      });
+
+      const score = value.length === 0 ? 0 : metCount;
+      const clampedScore = Math.min(score, 5);
+
+      const plates = platesTrack.querySelectorAll('.plate');
+      const colors = ['#b1483a', '#c07a3a', '#cf9a2e', '#7a8f3e', '#4c7a52'];
+      plates.forEach((p, i) => {
+        if (i < clampedScore) {
+          p.style.backgroundColor = colors[clampedScore - 1];
+          p.style.borderColor = colors[clampedScore - 1];
+        } else {
+          p.style.backgroundColor = '';
+          p.style.borderColor = '';
+        }
+      });
+
+      if (value.length === 0) {
+        strengthText.textContent = '—';
+        strengthText.style.color = '';
+        barbellCaption.textContent = 'LOAD THE BAR';
+        updateBarbell(0);
+        return;
+      }
+
+      const levelIndex = clampedScore === 0 ? 0 : clampedScore - 1;
+      const level = levels[Math.min(levelIndex, levels.length - 1)];
+      strengthText.textContent = level.label;
+      strengthText.style.color = level.color;
+      barbellCaption.textContent = `${clampedScore}/5 PLATES LOADED`;
+      updateBarbell(clampedScore);
+    }
+
+    passwordInput.addEventListener('input', evaluate);
+
+    toggleBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      toggleBtn.textContent = isPassword ? 'Hide' : 'Show';
+    });
+
+    document.getElementById('pw-clear').addEventListener('click', () => {
+      passwordInput.value = '';
+      evaluate();
+    });
+
+    document.getElementById('pw-code-toggle').addEventListener('click', () => {
+      document.getElementById('pw-code-panel').classList.toggle('open');
+    });
+
+    document.getElementById('pw-python-code').textContent = `# Password Strength Checker
+
+import re
+
+
+def check_password_strength(password):
+    criteria = {
+        "length": len(password) >= 8,
+        "uppercase": bool(re.search(r"[A-Z]", password)),
+        "lowercase": bool(re.search(r"[a-z]", password)),
+        "number": bool(re.search(r"[0-9]", password)),
+        "special": bool(re.search(r"[^A-Za-z0-9]", password)),
+    }
+
+    score = sum(criteria.values())
+    levels = ["Very weak", "Weak", "Fair", "Good", "Strong", "Very strong"]
+    label = levels[score] if password else "—"
+
+    return score, label, criteria
+
+
+def main():
+    password = input("Enter a password to check: ")
+    score, label, criteria = check_password_strength(password)
+
+    print(f"\\nStrength: {label} ({score}/5)")
+    for name, passed in criteria.items():
+        mark = "✓" if passed else "✗"
+        print(f"  {mark} {name}")
+
+
+if __name__ == "__main__":
+    main()
+`;
+
+    evaluate();
+  })();
+
+  /* ============ KEYSTROKE LOG ============ */
+  (function () {
+    const typingArea = document.getElementById('kl-typing-area');
+    const logList = document.getElementById('kl-log-list');
+    const logCount = document.getElementById('kl-log-count');
+    const statKeys = document.getElementById('kl-stat-keys');
+    const statChars = document.getElementById('kl-stat-chars');
+    const statWpm = document.getElementById('kl-stat-wpm');
+
+    let entries = [];
+    let keyCount = 0;
+    let startTime = null;
+
+    function formatTime(d) {
+      return d.toTimeString().split(' ')[0] + '.' + String(d.getMilliseconds()).padStart(3, '0');
+    }
+
+    function displayName(e) {
+      if (e.key === ' ') return 'Space';
+      return e.key;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    typingArea.addEventListener('keydown', (e) => {
+      if (!startTime) startTime = new Date();
+      keyCount++;
+
+      const now = new Date();
+      const entry = { key: displayName(e), time: formatTime(now) };
+      entries.push(entry);
+
+      const row = document.createElement('div');
+      row.className = 'log-entry';
+      row.innerHTML = `<span class="time">${entry.time}</span> &nbsp; key: <span class="key">${escapeHtml(entry.key)}</span>`;
+      logList.appendChild(row);
+      logList.scrollTop = logList.scrollHeight;
+
+      logCount.textContent = `${entries.length} entries`;
+      statKeys.textContent = keyCount;
+      updateStats();
+    });
+
+    function updateStats() {
+      const text = typingArea.value;
+      statChars.textContent = text.length;
+      if (startTime) {
+        const minutes = (new Date() - startTime) / 60000;
+        const words = text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
+        statWpm.textContent = minutes > 0 ? Math.round(words / minutes) : 0;
+      }
+    }
+
+    document.getElementById('kl-clear').addEventListener('click', () => {
+      entries = []; keyCount = 0; startTime = null;
+      typingArea.value = '';
+      logList.innerHTML = '';
+      logCount.textContent = '0 entries';
+      statKeys.textContent = '0';
+      statChars.textContent = '0';
+      statWpm.textContent = '0';
+    });
+
+    document.getElementById('kl-code-toggle').addEventListener('click', () => {
+      document.getElementById('kl-code-panel').classList.toggle('open');
+    });
+
+    document.getElementById('kl-python-code').textContent = `# Keystroke Log - safe demo
+# Logs keys typed into THIS program's own input only.
+# Does not hook the OS or capture input from other windows/apps.
+
+from datetime import datetime
+
+def log_keystrokes():
+    print("Type a line and press Enter. Type 'quit' to stop.\\n")
+    log = []
+
+    while True:
+        line = input("> ")
+        if line == "quit":
+            break
+        for char in line:
+            entry = (datetime.now().strftime("%H:%M:%S.%f")[:-3], char)
+            log.append(entry)
+            print(f"  logged key: {char!r} at {entry[0]}")
+
+    print("\\n--- Session log ---")
+    for timestamp, key in log:
+        print(f"{timestamp}  key: {key!r}")
+
+if __name__ == "__main__":
+    log_keystrokes()
+`;
+  })();
+</script>
+
+</body>
+</html>
